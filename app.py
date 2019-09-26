@@ -1,4 +1,8 @@
 from flask import Flask, request, render_template
+from pymongo import MongoClient
+
+client = MongoClient()
+db = client.Playlister
 
 
 app = Flask(__name__)
@@ -19,3 +23,8 @@ def playlists_index():
     return render_template('playlists_index.html', playlists=playlists)
 if __name__ == '__main__':
     app.run(debug=True)
+
+@app.route('/')
+def playlists_index():
+    """Show all playlists."""
+    return render_template('playlists_index.html', playlists=playlists.find())
