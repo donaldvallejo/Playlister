@@ -1,3 +1,6 @@
+# https://playlisterdv.herokuapp.com/ | https://git.heroku.com/playlisterdv.git
+# https://playlister2.herokuapp.com/ | https://git.heroku.com/playlister2.git
+
 from flask import Flask, render_template, request, redirect, url_for
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -13,12 +16,14 @@ app = Flask(__name__)
 @app.route('/')
 def playlists_index():
     """Show all playlists."""
+    print("playlist_index",playlists_index)
     return render_template('playlists_index.html', playlists=playlists.find()) 
 
 
 @app.route('/playlists', methods=['POST'])
 def playlists_submit():
     """Submit a new playlist."""
+    print("playlists")
     playlist = {
         'title': request.form.get('title'),
         'description': request.form.get('description'),
@@ -55,9 +60,9 @@ def playlists_update(playlist_id):
     return redirect(url_for('playlists_show', playlist_id=playlist_id))
 
 
-    @app.route('/playlists/<playlist_id>/delete', methods=['POST'])
-    def playlists_delete(playlist_id):
-        """Delete one playlist."""
+@app.route('/playlists/<playlist_id>/delete', methods=['POST'])
+def playlists_delete(playlist_id):
+    """Delete one playlist."""
     playlists.delete_one({'_id': ObjectId(playlist_id)})
     return redirect(url_for('playlists_index'))
 
