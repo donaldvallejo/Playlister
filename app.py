@@ -61,6 +61,5 @@ def playlists_update(playlist_id):
     playlists.delete_one({'_id': ObjectId(playlist_id)})
     return redirect(url_for('playlists_index'))
 
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True) 
