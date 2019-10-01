@@ -9,18 +9,20 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 """When im using heroku"""
+#'''
 host = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/Playlister')
-print(host)
 client = MongoClient(host=host)
 # client = MongoClient(host=f'{host}?retryWrites=false')
 db = client.get_default_database()
 playlists = db.playlists
+#'''
 
 """When im not using heroku"""
-# client = MongoClient()
-# db = client.Playlister
-# playlists = db.playlists
-
+'''
+client = MongoClient()
+db = client.Playlister
+playlists = db.playlists
+#'''
 
 app = Flask(__name__)
 
@@ -40,8 +42,8 @@ def playlists_submit():
         'videos': request.form.get('videos').split()
     }
     playlist_id = playlists.insert_one(playlist).inserted_id
-    return redirect(url_for('playlists_show', playlist_id=playlist_id))
-
+    #return redirect(url_for('playlists_show', playlist=playlist, playlist_id=playlist_id))
+    return render_template('playlists_show.html', playlist=playlist, playlist_id=playlist_id)
 
 @app.route('/playlists/new')
 def playlists_new():
@@ -75,6 +77,7 @@ def playlists_delete(playlist_id):
     """Delete one playlist."""
     playlists.delete_one({'_id': ObjectId(playlist_id)})
     return redirect(url_for('playlists_index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
