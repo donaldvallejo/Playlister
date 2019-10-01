@@ -4,26 +4,27 @@
 # sudo lsof -iTCP -sTCP:LISTEN -n -P
 
 import os
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
 """When im using heroku"""
-#'''
+
 host = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/Playlister')
 client = MongoClient(host=host)
 # client = MongoClient(host=f'{host}?retryWrites=false')
 db = client.get_default_database()
 playlists = db.playlists
 comments = db.comments
-#'''
+
 
 """When im not using heroku"""
-'''
+
 client = MongoClient()
 db = client.Playlister
 playlists = db.playlists
-#'''
+
 
 app = Flask(__name__)
 
@@ -40,12 +41,26 @@ def playlists_submit():
     playlist = {
         'title': request.form.get('title'),
         'description': request.form.get('description'),
+        'videos': request.form.get('videos').split(),
+        'created_at': datetime.now()
+    }
+    print(playlist)
+    playlist_id = playlists.insert_one(playlist).inserted_id
+    return redirect(url_for('playlists_show', playlist_id=playlist_id))
+
+'''
+@app.route('/playlists', methods=['POST'])
+def playlists_submit():
+    """Submit a new playlist."""
+    playlist = {
+        'title': request.form.get('title'),
+        'description': request.form.get('description'),
         'videos': request.form.get('videos').split()
     }
     playlist_id = playlists.insert_one(playlist).inserted_id
     #return redirect(url_for('playlists_show', playlist=playlist, playlist_id=playlist_id))
     return render_template('playlists_show.html', playlist=playlist, playlist_id=playlist_id)
-
+#'''
 
 @app.route('/playlists/new')
 def playlists_new():
@@ -63,6 +78,8 @@ def playlists_edit(playlist_id):
 @app.route('/playlists/<playlist_id>', methods=['POST'])
 def playlists_update(playlist_id):
     """Submit an edited playlist."""
+    # print(request)
+    # print([key for key in request.form.keys()])
     updated_playlist = {
         'title': request.form.get('title'),
         'description': request.form.get('description'),
@@ -100,7 +117,15 @@ def comments_new():
     comment_id = comments.insert_one(comment).inserted_id
     return redirect(url_for('playlists_show', playlist_id=request.form.get('playlist_id')))
     #return render_template('playlists_show.html', playlist_id=request.form.get('playlist_id'))
-    # return render_template('playlists_show.html', playlist=playlist, playlist_id=comment['playlist_id'])
+    #return render_template('playlists_show.html', playlist=playlist, playlist_id=comment['playlist_id'])
+
+
+@app.route('/playlists/comments/<comment_id>', methods=['POST'])
+def comments_delete(comment_id):
+    """Action to delete a comment."""
+    comment = comments.find_one({'_id': ObjectId(comment_id)})
+    comments.delete_one({'_id': ObjectId(comment_id)})
+    return redirect(url_for('playlists_show', playlist_id=comment.get('playlist_id')))
 
 
 if __name__ == '__main__':
